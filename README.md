@@ -7,14 +7,13 @@
 A Rust client library for the UniFi Network API that enables programmatic monitoring and management of UniFi deployments.
 
 ## Features
-
-- Asynchronous API using tokio
-- Strong typing with serde for serialization/deserialization
-- Comprehensive error handling
-- Pagination support
-- SSL verification configuration
-- API key authentication
-
+- [x] List sites
+- [x] List devices
+- [x] Get device details
+- [x] Get device statistics
+- [x] Restart device
+- [x] List clients
+- [x] Get application information
 ## Installation
 
 Add this to your `Cargo.toml`:

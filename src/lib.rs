@@ -35,7 +35,6 @@
 use chrono::{DateTime, Utc};
 use reqwest::{header, Client, ClientBuilder};
 use serde::{de, Deserialize, Deserializer, Serialize};
-use serde_json::Value;
 use thiserror::Error;
 use uuid::Uuid;
 
@@ -252,7 +251,7 @@ impl<'de> Deserialize<'de> for FrequencyBand {
     {
         struct FrequencyBandVisitor;
 
-        impl<'de> de::Visitor<'de> for FrequencyBandVisitor {
+        impl de::Visitor<'_> for FrequencyBandVisitor {
             type Value = FrequencyBand;
 
             fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
@@ -700,7 +699,7 @@ struct ErrorResponse {
 
 #[cfg(test)]
 mod tests {
-    use std::cmp::PartialEq;
+
     use super::*;
 
     #[tokio::test]
@@ -819,8 +818,15 @@ mod tests {
         };
 
         assert_eq!(stats.uptime_sec, 737201, "uptime_sec does not match");
-        assert_eq!(stats.cpu_utilization_pct, Some(30.8), "cpu_utilization_pct does not match");
-        assert!(stats.memory_utilization_pct.is_some(), "memory_utilization_pct is None");
+        assert_eq!(
+            stats.cpu_utilization_pct,
+            Some(30.8),
+            "cpu_utilization_pct does not match"
+        );
+        assert!(
+            stats.memory_utilization_pct.is_some(),
+            "memory_utilization_pct is None"
+        );
         assert!(stats.uplink.is_some(), "uplink is None");
         assert!(stats.interfaces.is_some(), "interfaces is None");
 
@@ -829,9 +835,15 @@ mod tests {
         assert_eq!(interfaces.radios.len(), 2, "radios length does not match");
 
         let radio_0 = &interfaces.radios[0];
-        assert!(radio_0.frequency_ghz.is_some(), "radio_0 frequency_ghz is None");
-        
+        assert!(
+            radio_0.frequency_ghz.is_some(),
+            "radio_0 frequency_ghz is None"
+        );
+
         let radio_1 = &interfaces.radios[1];
-        assert!(radio_1.frequency_ghz.is_some(), "radio_1 frequency_ghz is None");
+        assert!(
+            radio_1.frequency_ghz.is_some(),
+            "radio_1 frequency_ghz is None"
+        );
     }
 }

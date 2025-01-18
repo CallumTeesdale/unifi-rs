@@ -34,7 +34,8 @@
 
 use chrono::{DateTime, Utc};
 use reqwest::{header, Client, ClientBuilder};
-use serde::{Deserialize, Serialize};
+use serde::{de, Deserialize, Deserializer, Serialize};
+use serde_json::Value;
 use thiserror::Error;
 use uuid::Uuid;
 
@@ -207,6 +208,7 @@ pub enum ConnectorType {
 #[serde(rename_all = "camelCase")]
 pub struct WirelessRadioOverview {
     pub wlan_standard: Option<WlanStandard>,
+    #[serde(default, rename = "frequencyGHz")]
     pub frequency_ghz: Option<FrequencyBand>,
     pub channel_width_mhz: Option<i32>,
     pub channel: Option<i32>,
@@ -230,7 +232,7 @@ pub enum WlanStandard {
     IEEE802_11BE,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize)]
 pub enum FrequencyBand {
     #[serde(rename = "2.4")]
     Band2_4GHz,
@@ -240,6 +242,76 @@ pub enum FrequencyBand {
     Band6GHz,
     #[serde(rename = "60")]
     Band60GHz,
+}
+
+// Custom deserializer implementation
+impl<'de> Deserialize<'de> for FrequencyBand {
+    fn deserialize<D>(deserializer: D) -> Result<FrequencyBand, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        struct FrequencyBandVisitor;
+
+        impl<'de> de::Visitor<'de> for FrequencyBandVisitor {
+            type Value = FrequencyBand;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+                formatter.write_str("a string or number representing frequency band")
+            }
+
+            fn visit_str<E>(self, value: &str) -> Result<FrequencyBand, E>
+            where
+                E: de::Error,
+            {
+                match value {
+                    "2.4" => Ok(FrequencyBand::Band2_4GHz),
+                    "5" => Ok(FrequencyBand::Band5GHz),
+                    "6" => Ok(FrequencyBand::Band6GHz),
+                    "60" => Ok(FrequencyBand::Band60GHz),
+                    _ => Err(E::custom(format!("invalid frequency band: {}", value))),
+                }
+            }
+
+            fn visit_f64<E>(self, value: f64) -> Result<FrequencyBand, E>
+            where
+                E: de::Error,
+            {
+                match value {
+                    2.4 => Ok(FrequencyBand::Band2_4GHz),
+                    5.0 => Ok(FrequencyBand::Band5GHz),
+                    6.0 => Ok(FrequencyBand::Band6GHz),
+                    60.0 => Ok(FrequencyBand::Band60GHz),
+                    _ => Err(E::custom(format!("invalid frequency band: {}", value))),
+                }
+            }
+
+            fn visit_i64<E>(self, value: i64) -> Result<FrequencyBand, E>
+            where
+                E: de::Error,
+            {
+                match value {
+                    5 => Ok(FrequencyBand::Band5GHz),
+                    6 => Ok(FrequencyBand::Band6GHz),
+                    60 => Ok(FrequencyBand::Band60GHz),
+                    _ => Err(E::custom(format!("invalid frequency band: {}", value))),
+                }
+            }
+
+            fn visit_u64<E>(self, value: u64) -> Result<FrequencyBand, E>
+            where
+                E: de::Error,
+            {
+                match value {
+                    5 => Ok(FrequencyBand::Band5GHz),
+                    6 => Ok(FrequencyBand::Band6GHz),
+                    60 => Ok(FrequencyBand::Band60GHz),
+                    _ => Err(E::custom(format!("invalid frequency band: {}", value))),
+                }
+            }
+        }
+
+        deserializer.deserialize_any(FrequencyBandVisitor)
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -318,10 +390,12 @@ pub struct DeviceInterfaceStatistics {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct WirelessRadioStatistics {
-    #[serde(default)]
+    #[serde(default, rename = "frequencyGHz")]
     pub frequency_ghz: Option<FrequencyBand>,
+    #[serde(rename = "txRetriesPct")]
     pub tx_retries_pct: Option<f64>,
 }
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", tag = "type")]
 pub enum ClientOverview {
@@ -506,7 +580,6 @@ impl UnifiClient {
             self.base_url, site_id, device_id
         );
         let response = self.client.get(&url).send().await?;
-
         if response.status().is_success() {
             Ok(response.json().await?)
         } else {
@@ -627,6 +700,7 @@ struct ErrorResponse {
 
 #[cfg(test)]
 mod tests {
+    use std::cmp::PartialEq;
     use super::*;
 
     #[tokio::test]
@@ -665,7 +739,6 @@ mod tests {
         }
     }
 
-    // Update the test to handle optional fields
     #[tokio::test]
     async fn test_device_details_deserialization() {
         let details_json = r#"{
@@ -707,5 +780,58 @@ mod tests {
         let error: ErrorResponse = serde_json::from_str(error_json).unwrap();
         assert_eq!(error.status_code, 401);
         assert_eq!(error.message, "Unauthorized access");
+    }
+
+    #[tokio::test]
+    async fn test_device_statistics_deserialization() {
+        let stats_json = r#"{
+        "uptimeSec": 737201,
+        "lastHeartbeatAt": "2025-01-18T20:26:02Z",
+        "nextHeartbeatAt": "2025-01-18T20:26:07Z",
+        "loadAverage1Min": 1.65,
+        "loadAverage5Min": 1.28,
+        "loadAverage15Min": 1.3,
+        "cpuUtilizationPct": 30.8,
+        "memoryUtilizationPct": 74.2,
+        "uplink": {
+            "txRateBps": 309720,
+            "rxRateBps": 32288
+        },
+        "interfaces": {
+            "radios": [
+                {
+                    "frequencyGHz": 2.4,
+                    "txRetriesPct": 14.3
+                },
+                {
+                    "frequencyGHz": 5,
+                    "txRetriesPct": 0
+                }
+            ]
+        }
+    }"#;
+
+        let stats: DeviceStatistics = match serde_json::from_str(stats_json) {
+            Ok(stats) => stats,
+            Err(e) => {
+                panic!("Failed to deserialize JSON: {}", e);
+            }
+        };
+
+        assert_eq!(stats.uptime_sec, 737201, "uptime_sec does not match");
+        assert_eq!(stats.cpu_utilization_pct, Some(30.8), "cpu_utilization_pct does not match");
+        assert!(stats.memory_utilization_pct.is_some(), "memory_utilization_pct is None");
+        assert!(stats.uplink.is_some(), "uplink is None");
+        assert!(stats.interfaces.is_some(), "interfaces is None");
+
+        let interfaces = stats.interfaces.as_ref().unwrap();
+        assert!(!interfaces.radios.is_empty(), "radios is empty");
+        assert_eq!(interfaces.radios.len(), 2, "radios length does not match");
+
+        let radio_0 = &interfaces.radios[0];
+        assert!(radio_0.frequency_ghz.is_some(), "radio_0 frequency_ghz is None");
+        
+        let radio_1 = &interfaces.radios[1];
+        assert!(radio_1.frequency_ghz.is_some(), "radio_1 frequency_ghz is None");
     }
 }

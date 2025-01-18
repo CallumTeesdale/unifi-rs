@@ -33,22 +33,32 @@
 //! ```
 
 use chrono::{DateTime, Utc};
-use reqwest::{Client, ClientBuilder, header};
+use reqwest::{header, Client, ClientBuilder};
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 use uuid::Uuid;
 
+/// Enum representing various errors that can occur in the UniFi client library.
 #[derive(Debug, Error)]
 pub enum UnifiError {
+    /// Represents an HTTP error, wrapping the underlying `reqwest::Error`.
     #[error("HTTP error: {0}")]
     Http(#[from] reqwest::Error),
+
+    /// Represents an API error, containing the status code and error message.
     #[error("API error: {status_code} - {message}")]
     Api {
+        /// The HTTP status code returned by the API.
         status_code: u16,
+        /// The error message returned by the API.
         message: String,
     },
+
+    /// Represents an error when parsing a URL, wrapping the underlying `url::ParseError`.
     #[error("Invalid URL: {0}")]
     Url(#[from] url::ParseError),
+
+    /// Represents a configuration error, containing a descriptive error message.
     #[error("Configuration error: {0}")]
     Config(String),
 }
@@ -79,9 +89,9 @@ impl UnifiClientBuilder {
     }
 
     pub fn build(self) -> Result<UnifiClient, UnifiError> {
-        let api_key = self.api_key.ok_or_else(|| {
-            UnifiError::Config("API key is required".to_string())
-        })?;
+        let api_key = self
+            .api_key
+            .ok_or_else(|| UnifiError::Config("API key is required".to_string()))?;
 
         let mut headers = header::HeaderMap::new();
         headers.insert(
@@ -102,13 +112,11 @@ impl UnifiClientBuilder {
     }
 }
 
-// Main client
 #[derive(Clone)]
 pub struct UnifiClient {
     client: Client,
     base_url: String,
 }
-
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Page<T> {
@@ -124,7 +132,7 @@ pub struct Page<T> {
 #[serde(rename_all = "camelCase")]
 pub struct SiteOverview {
     pub id: Uuid,
-    pub name: String,
+    pub name: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -163,10 +171,11 @@ pub struct ApplicationInfo {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct DevicePhysicalInterfaces {
+    #[serde(default)]
     pub ports: Vec<EthernetPortOverview>,
+    #[serde(default)]
     pub radios: Vec<WirelessRadioOverview>,
 }
-
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct EthernetPortOverview {
@@ -197,10 +206,10 @@ pub enum ConnectorType {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct WirelessRadioOverview {
-    pub wlan_standard: WlanStandard,
-    pub frequency_ghz: FrequencyBand,
-    pub channel_width_mhz: i32,
-    pub channel: i32,
+    pub wlan_standard: Option<WlanStandard>,
+    pub frequency_ghz: Option<FrequencyBand>,
+    pub channel_width_mhz: Option<i32>,
+    pub channel: Option<i32>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -245,12 +254,15 @@ pub struct DeviceDetails {
     pub state: DeviceState,
     pub firmware_version: String,
     pub firmware_updatable: bool,
-    pub adopted_at: DateTime<Utc>,
-    pub provisioned_at: DateTime<Utc>,
+    pub adopted_at: Option<DateTime<Utc>>,
+    pub provisioned_at: Option<DateTime<Utc>>,
     pub configuration_id: String,
-    pub uplink: DeviceUplinkInterface,
-    pub features: DeviceFeatures,
-    pub interfaces: DevicePhysicalInterfaces,
+    #[serde(default)]
+    pub uplink: Option<DeviceUplinkInterface>,
+    #[serde(default)]
+    pub features: Option<DeviceFeatures>,
+    #[serde(default)]
+    pub interfaces: Option<DevicePhysicalInterfaces>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -278,13 +290,15 @@ pub struct DeviceStatistics {
     pub uptime_sec: i64,
     pub last_heartbeat_at: DateTime<Utc>,
     pub next_heartbeat_at: DateTime<Utc>,
-    pub load_average_1min: f64,
-    pub load_average_5min: f64,
-    pub load_average_15min: f64,
-    pub cpu_utilization_pct: f64,
-    pub memory_utilization_pct: f64,
-    pub uplink: DeviceUplinkStatistics,
-    pub interfaces: DeviceInterfaceStatistics,
+    pub load_average_1min: Option<f64>,
+    pub load_average_5min: Option<f64>,
+    pub load_average_15min: Option<f64>,
+    pub cpu_utilization_pct: Option<f64>,
+    pub memory_utilization_pct: Option<f64>,
+    #[serde(default)]
+    pub uplink: Option<DeviceUplinkStatistics>,
+    #[serde(default)]
+    pub interfaces: Option<DeviceInterfaceStatistics>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -297,16 +311,17 @@ pub struct DeviceUplinkStatistics {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct DeviceInterfaceStatistics {
+    #[serde(default)]
     pub radios: Vec<WirelessRadioStatistics>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct WirelessRadioStatistics {
-    pub frequency_ghz: FrequencyBand,
-    pub tx_retries_pct: f64,
+    #[serde(default)]
+    pub frequency_ghz: Option<FrequencyBand>,
+    pub tx_retries_pct: Option<f64>,
 }
-
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", tag = "type")]
 pub enum ClientOverview {
@@ -324,9 +339,10 @@ pub enum ClientOverview {
 #[serde(rename_all = "camelCase")]
 pub struct BaseClientOverview {
     pub id: Uuid,
-    pub name: String,
+    pub name: Option<String>,
     pub connected_at: DateTime<Utc>,
-    pub ip_address: String,
+    #[serde(default)]
+    pub ip_address: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -361,11 +377,25 @@ pub struct TeleportClientOverview {
     pub base: BaseClientOverview,
 }
 
-
 impl UnifiClient {
-    pub async fn list_sites(&self, offset: Option<i32>, limit: Option<i32>) -> Result<Page<SiteOverview>, UnifiError> {
+    /// Lists the sites available in the UniFi Network API.
+    ///
+    /// # Arguments
+    ///
+    /// * `offset` - An optional parameter to specify the starting point of the list.
+    /// * `limit` - An optional parameter to specify the maximum number of sites to return.
+    ///
+    /// # Returns
+    ///
+    /// A `Result` containing a `Page` of `SiteOverview` on success, or a `UnifiError` on failure.
+    pub async fn list_sites(
+        &self,
+        offset: Option<i32>,
+        limit: Option<i32>,
+    ) -> Result<Page<SiteOverview>, UnifiError> {
         let url = format!("{}/v1/sites", self.base_url);
-        let response = self.client
+        let response = self
+            .client
             .get(&url)
             .query(&[
                 ("offset", offset.unwrap_or(0)),
@@ -385,6 +415,17 @@ impl UnifiClient {
         }
     }
 
+    /// Lists the devices available in the specified site in the UniFi Network API.
+    ///
+    /// # Arguments
+    ///
+    /// * `site_id` - The UUID of the site for which to list devices.
+    /// * `offset` - An optional parameter to specify the starting point of the list.
+    /// * `limit` - An optional parameter to specify the maximum number of devices to return.
+    ///
+    /// # Returns
+    ///
+    /// A `Result` containing a `Page` of `DeviceOverview` on success, or a `UnifiError` on failure.
     pub async fn list_devices(
         &self,
         site_id: Uuid,
@@ -392,7 +433,8 @@ impl UnifiClient {
         limit: Option<i32>,
     ) -> Result<Page<DeviceOverview>, UnifiError> {
         let url = format!("{}/v1/sites/{}/devices", self.base_url, site_id);
-        let response = self.client
+        let response = self
+            .client
             .get(&url)
             .query(&[
                 ("offset", offset.unwrap_or(0)),
@@ -412,7 +454,21 @@ impl UnifiClient {
         }
     }
 
-    pub async fn get_device_details(&self, site_id: Uuid, device_id: Uuid) -> Result<DeviceDetails, UnifiError> {
+    /// Retrieves the details of a specific device in the UniFi Network API.
+    ///
+    /// # Arguments
+    ///
+    /// * `site_id` - The UUID of the site containing the device.
+    /// * `device_id` - The UUID of the device to retrieve details for.
+    ///
+    /// # Returns
+    ///
+    /// A `Result` containing `DeviceDetails` on success, or a `UnifiError` on failure.
+    pub async fn get_device_details(
+        &self,
+        site_id: Uuid,
+        device_id: Uuid,
+    ) -> Result<DeviceDetails, UnifiError> {
         let url = format!(
             "{}/v1/sites/{}/devices/{}",
             self.base_url, site_id, device_id
@@ -430,7 +486,21 @@ impl UnifiClient {
         }
     }
 
-    pub async fn get_device_statistics(&self, site_id: Uuid, device_id: Uuid) -> Result<DeviceStatistics, UnifiError> {
+    /// Retrieves the latest statistics for a specific device in the UniFi Network API.
+    ///
+    /// # Arguments
+    ///
+    /// * `site_id` - The UUID of the site containing the device.
+    /// * `device_id` - The UUID of the device to retrieve statistics for.
+    ///
+    /// # Returns
+    ///
+    /// A `Result` containing `DeviceStatistics` on success, or a `UnifiError` on failure.
+    pub async fn get_device_statistics(
+        &self,
+        site_id: Uuid,
+        device_id: Uuid,
+    ) -> Result<DeviceStatistics, UnifiError> {
         let url = format!(
             "{}/v1/sites/{}/devices/{}/statistics/latest",
             self.base_url, site_id, device_id
@@ -448,12 +518,23 @@ impl UnifiClient {
         }
     }
 
+    /// Restarts a specific device in the UniFi Network API.
+    ///
+    /// # Arguments
+    ///
+    /// * `site_id` - The UUID of the site containing the device.
+    /// * `device_id` - The UUID of the device to restart.
+    ///
+    /// # Returns
+    ///
+    /// A `Result` indicating success or containing a `UnifiError` on failure.
     pub async fn restart_device(&self, site_id: Uuid, device_id: Uuid) -> Result<(), UnifiError> {
         let url = format!(
             "{}/v1/sites/{}/devices/{}/actions",
             self.base_url, site_id, device_id
         );
-        let response = self.client
+        let response = self
+            .client
             .post(&url)
             .json(&DeviceAction {
                 action: "RESTART".to_string(),
@@ -472,6 +553,11 @@ impl UnifiClient {
         }
     }
 
+    /// Retrieves application information from the UniFi Network API.
+    ///
+    /// # Returns
+    ///
+    /// A `Result` containing `ApplicationInfo` on success, or a `UnifiError` on failure.
     pub async fn get_info(&self) -> Result<ApplicationInfo, UnifiError> {
         let url = format!("{}/v1/info", self.base_url);
         let response = self.client.get(&url).send().await?;
@@ -487,6 +573,17 @@ impl UnifiClient {
         }
     }
 
+    /// Lists the clients available in the specified site in the UniFi Network API.
+    ///
+    /// # Arguments
+    ///
+    /// * `site_id` - The UUID of the site for which to list clients.
+    /// * `offset` - An optional parameter to specify the starting point of the list.
+    /// * `limit` - An optional parameter to specify the maximum number of clients to return.
+    ///
+    /// # Returns
+    ///
+    /// A `Result` containing a `Page` of `ClientOverview` on success, or a `UnifiError` on failure.
     pub async fn list_clients(
         &self,
         site_id: Uuid,
@@ -494,7 +591,8 @@ impl UnifiClient {
         limit: Option<i32>,
     ) -> Result<Page<ClientOverview>, UnifiError> {
         let url = format!("{}/v1/sites/{}/clients", self.base_url, site_id);
-        let response = self.client
+        let response = self
+            .client
             .get(&url)
             .query(&[
                 ("offset", offset.unwrap_or(0)),
@@ -568,30 +666,31 @@ mod tests {
         }
     }
 
+    // Update the test to handle optional fields
     #[tokio::test]
     async fn test_device_details_deserialization() {
         let details_json = r#"{
-            "id": "123e4567-e89b-12d3-a456-426614174000",
-            "name": "Test Device",
-            "model": "UHDIW",
-            "supported": true,
-            "macAddress": "00:11:22:33:44:55",
-            "ipAddress": "192.168.1.1",
-            "state": "ONLINE",
-            "firmwareVersion": "6.6.55",
-            "firmwareUpdatable": true,
-            "adoptedAt": "2025-01-18T12:00:00Z",
-            "provisionedAt": "2025-01-18T12:00:00Z",
-            "configurationId": "test123",
-            "uplink": {
-                "deviceId": "123e4567-e89b-12d3-a456-426614174001"
-            },
-            "features": {},
-            "interfaces": {
-                "ports": [],
-                "radios": []
-            }
-        }"#;
+        "id": "123e4567-e89b-12d3-a456-426614174000",
+        "name": "Test Device",
+        "model": "UHDIW",
+        "supported": true,
+        "macAddress": "00:11:22:33:44:55",
+        "ipAddress": "192.168.1.1",
+        "state": "ONLINE",
+        "firmwareVersion": "6.6.55",
+        "firmwareUpdatable": true,
+        "adoptedAt": "2025-01-18T12:00:00Z",
+        "provisionedAt": "2025-01-18T12:00:00Z",
+        "configurationId": "test123",
+        "uplink": {
+            "deviceId": "123e4567-e89b-12d3-a456-426614174001"
+        },
+        "features": {},
+        "interfaces": {
+            "ports": [],
+            "radios": []
+        }
+    }"#;
 
         let details: DeviceDetails = serde_json::from_str(details_json).unwrap();
         assert_eq!(details.name, "Test Device");

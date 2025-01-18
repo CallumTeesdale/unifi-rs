@@ -1,6 +1,18 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.1.14] - 2025-01-18
+
+### Bug Fixes
+
+- Frequency band serialisation
+
+### Miscellaneous Tasks
+
+- Update for release
+- Update readme for latest version
+- Fmt
+
 ## [0.1.13] - 2025-01-18
 
 ### Bug Fixes

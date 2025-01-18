@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.1.12] - 2025-01-18
+
+### Bug Fixes
+
+- Combine release and publish
+
 ## [0.1.11] - 2025-01-18
 
 ### Bug Fixes

@@ -50,6 +50,13 @@ jobs:
       - name: Run tests
         run: cargo test --lib
 
+      - name: Commit CHANGELOG and Cargo.lock
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add CHANGELOG.md Cargo.lock
+          git commit -m "chore: update changelog and cargo.lock for ${{ steps.version.outputs.version }}" || echo "No changes to commit"
+
       - name: Debug Info
         run: |
           echo "Current directory: $(pwd)"
@@ -57,13 +64,15 @@ jobs:
           ls -la
           echo "Cargo.toml contents:"
           cat Cargo.toml
+          echo "Git status:"
+          git status
 
       - name: Publish to crates.io
         env:
           CRATES_TOKEN: ${{ secrets.CRATES_IO_TOKEN }}
         run: |
           echo "Publishing version: ${{ steps.version.outputs.version }}"
-          cargo publish --token ${CRATES_TOKEN} --verbose
+          cargo publish --token ${CRATES_TOKEN} --allow-dirty --verbose
 
       - name: Publish Status
         run: |

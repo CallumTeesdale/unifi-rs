@@ -32,14 +32,11 @@
 //! }
 //! ```
 
-use async_trait::async_trait;
 use chrono::{DateTime, Utc};
 use reqwest::{Client, ClientBuilder, header};
 use serde::{Deserialize, Serialize};
-use std::fmt;
 use thiserror::Error;
 use uuid::Uuid;
-use url::Url;
 
 #[derive(Debug, Error)]
 pub enum UnifiError {

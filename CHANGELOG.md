@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.1.11] - 2025-01-18
+
+### Bug Fixes
+
+- Try release flow
+
 ## [0.1.1] - 2025-01-18
 
 ### Documentation

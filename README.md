@@ -20,7 +20,7 @@ Add this to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-unifi-rs = "0.1.0"
+unifi-rs = "0.1.13"
 ```
 
 # Quick Start 

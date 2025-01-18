@@ -628,7 +628,7 @@ struct ErrorResponse {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use tokio;
+    
 
     #[tokio::test]
     async fn test_client_builder() {
@@ -661,7 +661,7 @@ mod tests {
 
         let client: ClientOverview = serde_json::from_str(wired_json).unwrap();
         match client {
-            ClientOverview::Wired(_) => assert!(true),
+            ClientOverview::Wired(_) => {},
             _ => panic!("Expected Wired client"),
         }
     }

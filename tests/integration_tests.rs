@@ -107,10 +107,10 @@ async fn test_device_statistics() {
 
         assert!(stats.uptime_sec >= 0);
         if let Some(cpu) = stats.cpu_utilization_pct {
-            assert!(cpu >= 0.0 && cpu <= 100.0);
+            assert!((0.0..=100.0).contains(&cpu));
         }
         if let Some(mem) = stats.memory_utilization_pct {
-            assert!(mem >= 0.0 && mem <= 100.0);
+            assert!((0.0..=100.0).contains(&mem));
         }
     } else {
         println!("No devices available to test statistics");

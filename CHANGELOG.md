@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.1.13] - 2025-01-18
+
+### Bug Fixes
+
+- Cargo publish dirty
+
 ## [0.1.12] - 2025-01-18
 
 ### Bug Fixes

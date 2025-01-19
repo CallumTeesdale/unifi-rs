@@ -1,7 +1,7 @@
+use crate::models::common::{ConnectorType, FrequencyBand, PortState, WlanStandard};
+use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
-use chrono::{DateTime, Utc};
-use crate::models::common::{ConnectorType, FrequencyBand, PortState, WlanStandard};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "UPPERCASE")]

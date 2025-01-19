@@ -1,6 +1,6 @@
-use serde::{Deserialize, Serialize};
-use chrono::{DateTime, Utc};
 use crate::models::common::FrequencyBand;
+use chrono::{DateTime, Utc};
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]

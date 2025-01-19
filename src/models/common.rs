@@ -1,5 +1,5 @@
-use serde::{de, Deserialize, Deserializer, Serialize};
 use serde::de::Error;
+use serde::{de, Deserialize, Deserializer, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Page<T> {

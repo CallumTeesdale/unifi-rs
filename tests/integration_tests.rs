@@ -1,8 +1,8 @@
 use dotenv::dotenv;
 use std::env;
 use unifi_rs::client::{UnifiClient, UnifiClientBuilder};
-use uuid::Uuid;
 use unifi_rs::errors::UnifiError;
+use uuid::Uuid;
 
 async fn create_test_client() -> UnifiClient {
     dotenv().ok();

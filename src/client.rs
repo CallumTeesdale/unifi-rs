@@ -1,12 +1,12 @@
-use reqwest::{header, Client, ClientBuilder};
-use serde::{Deserialize, Serialize};
-use uuid::Uuid;
-use crate::models::device::{DeviceDetails, DeviceOverview};
 use crate::errors::UnifiError;
 use crate::models::client::ClientOverview;
 use crate::models::common::{ApplicationInfo, Page};
+use crate::models::device::{DeviceDetails, DeviceOverview};
 use crate::models::site::SiteOverview;
 use crate::models::statistics::DeviceStatistics;
+use reqwest::{header, Client, ClientBuilder};
+use serde::{Deserialize, Serialize};
+use uuid::Uuid;
 
 pub struct UnifiClientBuilder {
     base_url: String,

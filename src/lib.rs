@@ -209,6 +209,7 @@ pub struct WirelessRadioOverview {
     pub wlan_standard: Option<WlanStandard>,
     #[serde(default, rename = "frequencyGHz")]
     pub frequency_ghz: Option<FrequencyBand>,
+    #[serde(default, rename = "channelWidthMHz")]
     pub channel_width_mhz: Option<i32>,
     pub channel: Option<i32>,
 }
@@ -360,8 +361,11 @@ pub struct DeviceStatistics {
     pub uptime_sec: i64,
     pub last_heartbeat_at: DateTime<Utc>,
     pub next_heartbeat_at: DateTime<Utc>,
+    #[serde(default, rename = "loadAverage1Min")]
     pub load_average_1min: Option<f64>,
+    #[serde(default, rename = "loadAverage5Min")]
     pub load_average_5min: Option<f64>,
+    #[serde(default, rename = "loadAverage15Min")]
     pub load_average_15min: Option<f64>,
     pub cpu_utilization_pct: Option<f64>,
     pub memory_utilization_pct: Option<f64>,

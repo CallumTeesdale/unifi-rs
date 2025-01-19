@@ -1,6 +1,16 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.1.16] - 2025-01-19
+
+### Bug Fixes
+
+- Serde renaming
+
+### Miscellaneous Tasks
+
+- Cargo lock after release
+
 ## [0.1.15] - 2025-01-19
 
 ### Miscellaneous Tasks

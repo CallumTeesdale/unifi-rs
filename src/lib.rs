@@ -231,7 +231,7 @@ pub enum WlanStandard {
     IEEE802_11BE,
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, PartialEq)]
 pub enum FrequencyBand {
     #[serde(rename = "2.4")]
     Band2_4GHz,
@@ -243,7 +243,6 @@ pub enum FrequencyBand {
     Band60GHz,
 }
 
-// Custom deserializer implementation
 impl<'de> Deserialize<'de> for FrequencyBand {
     fn deserialize<D>(deserializer: D) -> Result<FrequencyBand, D::Error>
     where

@@ -36,7 +36,6 @@ pub mod models;
 pub mod client;
 pub mod errors;
 
-use serde::{Deserialize, Deserializer, Serialize};
 
 #[cfg(test)]
 mod tests {

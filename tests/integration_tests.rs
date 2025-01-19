@@ -1,7 +1,8 @@
 use dotenv::dotenv;
 use std::env;
-use unifi_rs::{UnifiClient, UnifiClientBuilder, UnifiError};
+use unifi_rs::client::{UnifiClient, UnifiClientBuilder};
 use uuid::Uuid;
+use unifi_rs::errors::UnifiError;
 
 async fn create_test_client() -> UnifiClient {
     dotenv().ok();
@@ -133,10 +134,10 @@ async fn test_list_clients() {
 
     if let Some(client_overview) = clients.data.first() {
         match client_overview {
-            unifi_rs::ClientOverview::Wired(c) => {
+            unifi_rs::models::client::ClientOverview::Wired(c) => {
                 assert!(!c.mac_address.is_empty());
             }
-            unifi_rs::ClientOverview::Wireless(c) => {
+            unifi_rs::models::client::ClientOverview::Wireless(c) => {
                 assert!(!c.mac_address.is_empty());
             }
             _ => {}

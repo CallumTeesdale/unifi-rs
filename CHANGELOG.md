@@ -1,6 +1,13 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.1.15] - 2025-01-19
+
+### Miscellaneous Tasks
+
+- Release cargo.lock
+- Add partial eq derive for Frequency band
+
 ## [0.1.14] - 2025-01-18
 
 ### Bug Fixes

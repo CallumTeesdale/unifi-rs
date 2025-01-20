@@ -8,6 +8,7 @@ use reqwest::{header, Client, ClientBuilder};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
+/// A builder for creating a `UnifiClient`.
 pub struct UnifiClientBuilder {
     base_url: String,
     api_key: Option<String>,

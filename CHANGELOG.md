@@ -1,6 +1,20 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.2.0] - 2025-01-20
+Breaking changes:
+- Rename moved api response objects to models
+### Bug Fixes
+
+- Serde renaming
+
+### Miscellaneous Tasks
+
+- Move files around rather than one big lib
+- Remove unused imports
+- Fmt
+- Partial eq for device state
+
 ## [0.1.16] - 2025-01-19
 
 ### Bug Fixes

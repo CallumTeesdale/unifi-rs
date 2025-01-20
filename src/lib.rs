@@ -36,6 +36,10 @@ pub mod client;
 pub mod errors;
 pub mod models;
 
+pub use client::*;
+pub use errors::*;
+pub use models::*;
+
 #[cfg(test)]
 mod tests {
     use crate::client::{ErrorResponse, UnifiClientBuilder};
